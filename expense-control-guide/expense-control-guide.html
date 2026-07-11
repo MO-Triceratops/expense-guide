@@ -362,6 +362,117 @@
       transform: scale(0.88);
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
+    /* Feedback floating button */
+    .feedback-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #d97706);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+      z-index: 1000;
+      transition: transform 0.3s, box-shadow 0.3s;
+      animation: feedbackPulse 2s infinite;
+    }
+    .feedback-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 24px rgba(245, 158, 11, 0.6);
+    }
+    @keyframes feedbackPulse {
+      0%, 100% { box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4); }
+      50% { box-shadow: 0 4px 24px rgba(245, 158, 11, 0.7); }
+    }
+    /* Feedback modal */
+    .feedback-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    .feedback-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    .feedback-modal {
+      background: var(--card);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 480px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      transform: translateY(20px) scale(0.95);
+      transition: transform 0.3s;
+    }
+    .feedback-overlay.active .feedback-modal {
+      transform: translateY(0) scale(1);
+    }
+    .feedback-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 1.5rem;
+      border-bottom: 1px solid var(--rule);
+    }
+    .feedback-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--fg);
+    }
+    .feedback-close {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: none;
+      background: var(--bg-soft);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .feedback-close:hover {
+      background: var(--danger);
+      color: #fff;
+    }
+    .feedback-body {
+      flex: 1;
+      overflow: hidden;
+    }
+    .feedback-body iframe {
+      width: 100%;
+      height: 100%;
+      min-height: 400px;
+      border: none;
+      border-radius: 0 0 16px 16px;
+    }
+    .feedback-tip {
+      padding: 0.8rem 1.5rem;
+      background: var(--bg-soft);
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+      border-radius: 0 0 16px 16px;
+    }
     .lightbox-overlay.active img {
       transform: scale(1);
     }
@@ -2796,6 +2907,56 @@
         document.getElementById('pwInput').value = '';
       }
     }
+  </script>
+
+  <!-- Feedback floating button -->
+  <button class="feedback-btn" id="feedbackBtn" title="意见反馈">💬</button>
+
+  <!-- Feedback modal -->
+  <div class="feedback-overlay" id="feedbackOverlay">
+    <div class="feedback-modal">
+      <div class="feedback-header">
+        <h3>📋 意见反馈</h3>
+        <button class="feedback-close" id="feedbackClose">&times;</button>
+      </div>
+      <div class="feedback-body">
+        <iframe id="feedbackIframe" src="" allowfullscreen></iframe>
+      </div>
+      <div class="feedback-tip">提交后将自动汇总到管理员的WPS表格中</div>
+    </div>
+  </div>
+
+  <script>
+    /* Feedback modal logic */
+    var feedbackBtn = document.getElementById('feedbackBtn');
+    var feedbackOverlay = document.getElementById('feedbackOverlay');
+    var feedbackClose = document.getElementById('feedbackClose');
+    var feedbackIframe = document.getElementById('feedbackIframe');
+    var feedbackUrl = 'https://www.kdocs.cn/wo/sl/v12w7F1k';
+
+    feedbackBtn.addEventListener('click', function() {
+      feedbackIframe.src = feedbackUrl;
+      feedbackOverlay.classList.add('active');
+    });
+
+    feedbackClose.addEventListener('click', function() {
+      feedbackOverlay.classList.remove('active');
+      setTimeout(function() { feedbackIframe.src = ''; }, 300);
+    });
+
+    feedbackOverlay.addEventListener('click', function(e) {
+      if (e.target === feedbackOverlay) {
+        feedbackOverlay.classList.remove('active');
+        setTimeout(function() { feedbackIframe.src = ''; }, 300);
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && feedbackOverlay.classList.contains('active')) {
+        feedbackOverlay.classList.remove('active');
+        setTimeout(function() { feedbackIframe.src = ''; }, 300);
+      }
+    });
   </script>
 
 </body>
