@@ -395,8 +395,8 @@
     .feedback-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.5);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
       z-index: 1001;
       display: flex;
       align-items: center;
@@ -457,22 +457,17 @@
     .feedback-body {
       flex: 1;
       overflow: hidden;
+      padding: 0;
     }
     .feedback-body iframe {
       width: 100%;
       height: 100%;
-      min-height: 400px;
+      min-height: 480px;
       border: none;
-      border-radius: 0 0 16px 16px;
+      margin-top: -52px;
+      clip-path: inset(52px 0 60px 0);
     }
-    .feedback-tip {
-      padding: 0.8rem 1.5rem;
-      background: var(--bg-soft);
-      color: var(--muted);
-      font-size: 0.8rem;
-      text-align: center;
-      border-radius: 0 0 16px 16px;
-    }
+
     .lightbox-overlay.active img {
       transform: scale(1);
     }
@@ -2922,7 +2917,6 @@
       <div class="feedback-body">
         <iframe id="feedbackIframe" src="" allowfullscreen></iframe>
       </div>
-      <div class="feedback-tip">提交后将自动汇总到管理员的WPS表格中</div>
     </div>
   </div>
 
@@ -2932,30 +2926,24 @@
     var feedbackOverlay = document.getElementById('feedbackOverlay');
     var feedbackClose = document.getElementById('feedbackClose');
     var feedbackIframe = document.getElementById('feedbackIframe');
-    var feedbackUrl = 'https://www.kdocs.cn/wo/sl/v12w7F1k';
+    var feedbackUrl = 'https://my.feishu.cn/share/base/form/shrcnE3By48jfz6KI9PwxZe89pg';
 
     feedbackBtn.addEventListener('click', function() {
       feedbackIframe.src = feedbackUrl;
       feedbackOverlay.classList.add('active');
     });
 
-    feedbackClose.addEventListener('click', function() {
+    function closeFeedback() {
       feedbackOverlay.classList.remove('active');
       setTimeout(function() { feedbackIframe.src = ''; }, 300);
-    });
+    }
 
+    feedbackClose.addEventListener('click', closeFeedback);
     feedbackOverlay.addEventListener('click', function(e) {
-      if (e.target === feedbackOverlay) {
-        feedbackOverlay.classList.remove('active');
-        setTimeout(function() { feedbackIframe.src = ''; }, 300);
-      }
+      if (e.target === feedbackOverlay) closeFeedback();
     });
-
     document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape' && feedbackOverlay.classList.contains('active')) {
-        feedbackOverlay.classList.remove('active');
-        setTimeout(function() { feedbackIframe.src = ''; }, 300);
-      }
+      if (e.key === 'Escape' && feedbackOverlay.classList.contains('active')) closeFeedback();
     });
   </script>
 
