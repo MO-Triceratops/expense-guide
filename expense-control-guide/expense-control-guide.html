@@ -414,7 +414,7 @@
       border-radius: 16px;
       width: 90%;
       max-width: 480px;
-      max-height: 85vh;
+      max-height: 92vh;
       display: flex;
       flex-direction: column;
       box-shadow: 0 20px 60px rgba(0,0,0,0.5);
@@ -428,27 +428,49 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1.2rem 1.5rem;
+      padding: 1rem 1.2rem;
       border-bottom: 1px solid var(--rule);
+      gap: 0.5rem;
+      flex-shrink: 0;
     }
     .feedback-header h3 {
       margin: 0;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       color: var(--fg);
     }
+    .feedback-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .feedback-done-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .feedback-done-btn:hover {
+      background: #d97706;
+    }
     .feedback-close {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
       border: none;
       background: var(--bg-soft);
       color: var(--muted);
       cursor: pointer;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
     }
     .feedback-close:hover {
       background: var(--danger);
@@ -458,14 +480,44 @@
       flex: 1;
       overflow: hidden;
       padding: 0;
+      position: relative;
+      min-height: 400px;
     }
     .feedback-body iframe {
       width: 100%;
-      height: 100%;
-      min-height: 480px;
       border: none;
-      margin-top: -52px;
-      clip-path: inset(52px 0 60px 0);
+      position: absolute;
+      top: -200px;
+      left: 0;
+      clip-path: inset(200px 0 0 0);
+    }
+    .feedback-success {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 1.5rem;
+    }
+    .feedback-success .success-icon {
+      font-size: 3.5rem;
+      margin-bottom: 0.8rem;
+    }
+    .feedback-success p {
+      color: var(--fg);
+      font-size: 1.1rem;
+      margin: 0.3rem 0;
+    }
+    .feedback-success .success-btn {
+      margin-top: 1.5rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .feedback-success .success-btn:hover {
+      background: #d97706;
     }
 
     .lightbox-overlay.active img {
@@ -2910,12 +2962,21 @@
   <!-- Feedback modal -->
   <div class="feedback-overlay" id="feedbackOverlay">
     <div class="feedback-modal">
-      <div class="feedback-header">
+      <div class="feedback-header" id="fbHeader">
         <h3>📋 意见反馈</h3>
-        <button class="feedback-close" id="feedbackClose">&times;</button>
+        <div class="feedback-header-actions">
+          <button class="feedback-done-btn" id="submitHintBtn">提交完成</button>
+          <button class="feedback-close" id="feedbackClose">&times;</button>
+        </div>
       </div>
-      <div class="feedback-body">
+      <div class="feedback-body" id="fbBody">
         <iframe id="feedbackIframe" src="" allowfullscreen></iframe>
+      </div>
+      <div class="feedback-success" id="fbSuccess" style="display:none;">
+        <div class="success-icon">✅</div>
+        <p>感谢您的反馈！</p>
+        <p style="color:var(--muted);font-size:0.9rem;margin-top:0.5rem">您的意见已成功提交，我们会尽快处理</p>
+        <button class="success-btn" id="fbCloseBtn">关闭</button>
       </div>
     </div>
   </div>
@@ -2926,18 +2987,62 @@
     var feedbackOverlay = document.getElementById('feedbackOverlay');
     var feedbackClose = document.getElementById('feedbackClose');
     var feedbackIframe = document.getElementById('feedbackIframe');
+    var feedbackSuccess = document.getElementById('fbSuccess');
+    var submitHintBtn = document.getElementById('submitHintBtn');
+    var fbCloseBtn = document.getElementById('fbCloseBtn');
+    var fbBody = document.getElementById('fbBody');
     var feedbackUrl = 'https://my.feishu.cn/share/base/form/shrcnE3By48jfz6KI9PwxZe89pg';
 
+    // 动态调整iframe高度，适配不同屏幕尺寸
+    function adjustIframeHeight() {
+      var bodyHeight = fbBody.clientHeight;
+      if (bodyHeight > 0) {
+        // iframe顶部裁切200px，所以总高度 = 容器高度 + 200px
+        feedbackIframe.style.height = (bodyHeight + 200) + 'px';
+      }
+    }
+
+    // 显示成功页面
+    function showSuccess() {
+      fbBody.style.display = 'none';
+      feedbackSuccess.style.display = 'block';
+    }
+
+    // 重置状态
+    function resetFeedback() {
+      feedbackIframe.src = '';
+      fbBody.style.display = '';
+      feedbackSuccess.style.display = 'none';
+    }
+
     feedbackBtn.addEventListener('click', function() {
-      feedbackIframe.src = feedbackUrl;
+      resetFeedback();
       feedbackOverlay.classList.add('active');
+      // 延迟设置src和调整高度，等弹窗动画完成后DOM尺寸稳定
+      setTimeout(function() {
+        feedbackIframe.src = feedbackUrl;
+        adjustIframeHeight();
+      }, 350);
     });
 
     function closeFeedback() {
       feedbackOverlay.classList.remove('active');
-      setTimeout(function() { feedbackIframe.src = ''; }, 300);
+      setTimeout(function() {
+        resetFeedback();
+      }, 300);
     }
 
+    // 窗口大小变化时重新调整iframe高度
+    window.addEventListener('resize', function() {
+      if (feedbackOverlay.classList.contains('active')) {
+        adjustIframeHeight();
+      }
+    });
+
+    // 提交完成按钮
+    submitHintBtn.addEventListener('click', showSuccess);
+    // 成功页关闭按钮
+    fbCloseBtn.addEventListener('click', closeFeedback);
     feedbackClose.addEventListener('click', closeFeedback);
     feedbackOverlay.addEventListener('click', function(e) {
       if (e.target === feedbackOverlay) closeFeedback();
